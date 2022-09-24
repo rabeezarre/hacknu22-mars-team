@@ -2,22 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="86cd6457-f286-4531-97d6-a27abf7d1529" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/3d_models/Playful dog.glb" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/3d_models/Playful dog.glb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/3d_models/maral_demo.glb" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/3d_models/maral_demo.glb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev1.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev1.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev10.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev10.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev2.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev2.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev3.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev3.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev4.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev4.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev5.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev5.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev6.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev6.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev7.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev7.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev8.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev8.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/cases/dev9.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/cases/dev9.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hacknu-dev-data.xlsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,6 +14,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
+        <option value="CSS File" />
       </list>
     </option>
   </component>
@@ -51,6 +37,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "last_opened_file_path": "/Users/rabeezarre/Documents/hacknu/maps-platform-101-webgl/solution",
+    "list.type.of.created.stylesheet": "CSS",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
@@ -69,6 +56,7 @@
       <option name="presentableId" value="Default" />
       <updated>1663949314306</updated>
       <workItem from="1663949315387" duration="2691000" />
+      <workItem from="1664048170460" duration="1827000" />
     </task>
     <servers />
   </component>
