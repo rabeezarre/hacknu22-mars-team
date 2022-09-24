@@ -15,6 +15,16 @@
 import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import case1 from '/src/assets/cases/dev1.json' assert {type: 'json'}
+import case2 from '/src/assets/cases/dev2.json' assert {type: 'json'}
+import case3 from '/src/assets/cases/dev3.json' assert {type: 'json'}
+import case4 from '/src/assets/cases/dev4.json' assert {type: 'json'}
+import case5 from '/src/assets/cases/dev5.json' assert {type: 'json'}
+import case6 from '/src/assets/cases/dev6.json' assert {type: 'json'}
+import case7 from '/src/assets/cases/dev7.json' assert {type: 'json'}
+import case8 from '/src/assets/cases/dev8.json' assert {type: 'json'}
+import case9 from '/src/assets/cases/dev9.json' assert {type: 'json'}
+import case10 from '/src/assets/cases/dev10.json' assert {type: 'json'}
 
 const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
@@ -40,7 +50,7 @@ async function initMap() {
 function initWebGLOverlayView(map) {  
   let scene, renderer, camera, loader;
   const webGLOverlayView = new google.maps.WebGLOverlayView();
-  
+
   webGLOverlayView.onAdd = () => {   
     // set up the scene
     scene = new THREE.Scene();
@@ -53,15 +63,28 @@ function initWebGLOverlayView(map) {
   
     // load the model    
     loader = new GLTFLoader();               
-    const source = "pin.gltf";
+    const source = 'assets/3d_models/maral_demo.glb';
+
+    const geometry = new THREE.CylinderGeometry( 20, 20, 40, 36 );
+    const material = new THREE.MeshBasicMaterial( {
+      color: 0x9fc5e8, 
+      opacity: 0.6, 
+      transparent: true
+    } );
+  
+    const accuracy = new THREE.Mesh( geometry, material );
+    accuracy.rotation.x = Math.PI/2;
+    scene.add(accuracy);
+
     loader.load(
       source,
-      gltf => {      
+      gltf => {     
         gltf.scene.scale.set(25,25,25);
-        gltf.scene.rotation.x = 180 * Math.PI/180; // rotations are in radians
+        gltf.scene.rotation.x = Math.PI/2; // rotations are in radians
         scene.add(gltf.scene);           
       }
     );
+
   }
   
   webGLOverlayView.onContextRestored = ({gl}) => {    
@@ -100,7 +123,7 @@ function initWebGLOverlayView(map) {
     const latLngAltitudeLiteral = {
         lat: mapOptions.center.lat,
         lng: mapOptions.center.lng,
-        altitude: 120
+        altitude: 0
     }
 
     const matrix = transformer.fromLatLngAltitude(latLngAltitudeLiteral);
@@ -117,5 +140,10 @@ function initWebGLOverlayView(map) {
 
 (async () => {        
   const map = await initMap();
-  initWebGLOverlayView(map);    
-})();
+  initWebGLOverlayView(map);
+
+  //reading props
+  const urlParams = new URLSearchParams(window.location.search);
+  const caseValue = urlParams.get('case');
+  console.log(caseValue);
+})()
