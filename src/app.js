@@ -15,6 +15,7 @@
 import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+//import {Text} from 'troika-three-text'
 
 const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
@@ -53,25 +54,28 @@ function initWebGLOverlayView(map) {
   
     // load the model    
     loader = new GLTFLoader();               
-    const source = "Playful dog.glb";
+    const source = "maral_demo.glb";
 
-    const geometry = new THREE.SphereGeometry( 50, 32, 16 );
-    const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
-    const accuracySphere = new THREE.Mesh( geometry, material);
+    const geometry = new THREE.CylinderGeometry( 20, 20, 40, 36 );
+    const material = new THREE.MeshBasicMaterial( {
+      color: 0x9fc5e8, 
+      opacity: 0.6, 
+      transparent: true
+    } );
+  
+    const accuracy = new THREE.Mesh( geometry, material );
+    accuracy.rotation.x = Math.PI/2;
+    scene.add(accuracy);
 
-    accuracySphere.material.opacity = 0.6;
-    accuracySphere.material.transparent = true;
-
-    scene.add(accuracySphere);
     loader.load(
       source,
-      gltf => {      
+      gltf => {     
         gltf.scene.scale.set(25,25,25);
-        gltf.scene.rotation.x = 180 * Math.PI/180; // rotations are in radians
+        gltf.scene.rotation.x = Math.PI/2; // rotations are in radians
         scene.add(gltf.scene);           
       }
     );
-    
+
   }
   
   webGLOverlayView.onContextRestored = ({gl}) => {    
