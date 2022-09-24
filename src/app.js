@@ -14,7 +14,6 @@
 
 import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
-import {TextGeometry} from 'three'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import cases from '/src/assets/cases.json' assert {type: 'json'}
 
@@ -40,15 +39,13 @@ async function initMap(caseValue) {
     "center": { lat, lng },
     "mapId": "9221e2194dfa8f5e"
   });
-} 
+}
 
 function initWebGLOverlayView(map, caseValue) {  
   let scene, renderer, camera, loader;
-
   const webGLOverlayView = new google.maps.WebGLOverlayView();
   var sizeOfCase = cases[caseValue].length;
   loader = new GLTFLoader();
-  var accuracy;
 
   //json properties
   var json_latitude = cases[caseValue][sizeOfCase-1]["Latitude"];
@@ -57,7 +54,6 @@ function initWebGLOverlayView(map, caseValue) {
   var json_horizontal_acc = cases[caseValue][sizeOfCase-1]["Horizontal accuracy"];
   var json_altitude = cases[caseValue][sizeOfCase-1]["Altitude"];
   var json_conf_acc = cases[caseValue][sizeOfCase-1]["Confidence in location accuracy"];
-  var json_floor = cases[caseValue][sizeOfCase-1]["Floor label"];
 
   const mapOptions = {
     "tilt": 0,
@@ -87,9 +83,18 @@ function initWebGLOverlayView(map, caseValue) {
       opacity: json_conf_acc, 
       transparent: true
     } );
-    accuracy = new THREE.Mesh( cylinder, cylinder_material );
+    const accuracy = new THREE.Mesh( cylinder, cylinder_material );
     accuracy.rotation.x = Math.PI/2;
     scene.add(accuracy);
+
+//load floor line
+const dir1 = new THREE.Vector3( 0, 0, 1 );
+dir1.normalize();
+const origin = new THREE.Vector3( 0, 0, -json_altitude);
+const length = json_altitude-10;
+const hex = 0x0fc5ff;
+const arrowHelper1 = new THREE.ArrowHelper( dir1, origin, length, hex, 5, 3 );
+scene.add(arrowHelper1);
 
     // load the model
     var source = 'assets/3d_models/maral_demo.glb';
@@ -114,28 +119,25 @@ function initWebGLOverlayView(map, caseValue) {
     renderer.autoClear = false;
 
     // wait to move the camera until the 3D model loads    
-    loader.manager.onLoad = () => {    
-
-        accuracy.cylinder_radius = 3000;
-
-        renderer.setAnimationLoop(() => {
-          map.moveCamera({
-            "tilt": mapOptions.tilt,
-            "heading": mapOptions.heading,
-            "zoom": mapOptions.zoom
-          });            
-          
-          // rotate the map 360 degrees 
-          if (mapOptions.tilt < 67.5) {
-            mapOptions.tilt += 0.5
-          } else if (mapOptions.heading <= 360) {
-            mapOptions.heading += 0.2;
-          } else {
-            renderer.setAnimationLoop(null)
-          }
-        });
-      }
+    loader.manager.onLoad = () => {        
+      renderer.setAnimationLoop(() => {
+        map.moveCamera({
+          "tilt": mapOptions.tilt,
+          "heading": mapOptions.heading,
+          "zoom": mapOptions.zoom
+        });            
+        
+        // rotate the map 360 degrees 
+        if (mapOptions.tilt < 67.5) {
+          mapOptions.tilt += 0.5
+        } else if (mapOptions.heading <= 360) {
+          mapOptions.heading += 0.2;
+        } else {
+          renderer.setAnimationLoop(null)
+        }
+      });        
     }
+  }
 
   webGLOverlayView.onDraw = ({gl, transformer}) => {
     // update camera matrix to ensure the model is georeferenced correctly on the map
@@ -157,24 +159,6 @@ function initWebGLOverlayView(map, caseValue) {
   webGLOverlayView.setMap(map);
 }
 
-
-function moveCameraUp() {
-    console.log("moveCameraUp");
-    map.moveCamera({
-        "tilt": 0,
-        "heading": 0,
-        "zoom": 20
-      });
-}
-
-function moveCameraSide(){
-    map.moveCamera({
-        "tilt": 90,
-        "heading": 0,
-        "zoom": 20
-      }); 
-}
-
 (async () => {
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -183,26 +167,98 @@ function moveCameraSide(){
   const map = await initMap(caseValue-1);
   initWebGLOverlayView(map, caseValue-1);
 
-  //reading props
-  
-  // var infos = []
-  // var scene = [...cases[caseValue]]
-  // scene = scene.sort(
-  //   function(){
-  //     if(a.Identifier > b.Identifier) return -1
-  //     if(a.Identifier < b.Identifier) return 1
-  //     if(a.Timestamp > b.Timestamp) return -1
-  //     if(a.Timestamp < b.Timestamp) return 1
-  //   }
-  // )
-  // for(var c in scene){
-  //   var s = `<h1 id="firstHeading" class="firstHeading">${c.Identifier}</h1>` +
-  //   `<p>Activity: ${c.Activity}</p>`+
-  //   `<p>Floor label: ${c['Floor label']}</p>`
-  //   if(scene.length > 0){
-  //     var max_time = Math.max(...scene.map(p => p.Timestamp))
-  //     s += `<p>Time: ${Math.round((max_time - c.Timestamp)/1000)} ago</p>`
-  //   }
-  //   infos.push(s)
-  // }
+  var points = [...cases[caseValue-1]]
+  points = points.sort(
+    function(a,b){
+      if(a.Identifier > b.Identifier) return -1
+      if(a.Identifier < b.Identifier) return 1
+      if(a.Timestamp > b.Timestamp) return 1
+      if(a.Timestamp < b.Timestamp) return -1
+    }
+  )
+  var traces = new Map()
+  for(var p of points){
+    var identif = p.Identifier !== "null" ? p.Identifier : '?'
+    if(!traces.has(identif)){
+      traces.set(identif, [p])
+    } else {
+      traces.get(identif).push(p)
+    }
+  }
+
+  for(const person of traces.keys()){
+    var color = Math.floor(Math.random()*16777215).toString(16)
+    var lastTime = traces.get(person)[traces.get(person).length-1]['Timestamp']
+    console.log(lastTime)
+    traces.get(person).forEach(function(point){
+        var marker = new google.maps.Marker({
+          position:{lat:point['Latitude'], lng:point['Longitude']},
+          map,
+          title:person
+        })
+        var contentString = `
+          <h3>Identifier: ${point['Identifier']}</h3>
+          <p>Activity: ${point['Activity']}</p>
+        `
+        contentString += point['Floor label'] !== 'null' ? `<p>Floor label: ${point['Floor label']}</p>` : ''
+        contentString += `<p>Measured ${(Math.round(lastTime - point['Timestamp'])/1000)} seconds ago</p>`
+        const infowindow = new google.maps.InfoWindow({
+          content: contentString,
+        });
+      
+        marker.addListener("click", () => {
+          infowindow.open({
+            anchor: marker,
+            map,
+            shouldFocus: false,
+          });
+        });
+      }
+    )
+    if(traces.get(person).length > 1){
+      var directionsService = new google.maps.DirectionsService();
+      var directionsRenderer = new google.maps.DirectionsRenderer({
+        polylineOptions: {
+          strokeColor: `#${color}`,
+          strokeOpacity:0.8,
+          geodesic:true
+        },
+        suppressMarkers: true
+      });
+      directionsRenderer.setMap(map);
+      var mode = traces.get(person)[0]['Activity']
+      if(mode === 'UNKNOWN' || mode === 'running' || mode === 'walking'){
+        mode = 'WALKING'
+      } else if (mode === 'cycling'){
+        mode = 'BICYCLING'
+      } else {
+        mode = 'DRIVING'
+      }
+      var wpoints = traces.get(person).length > 2  ? traces.get(person).slice(1, traces.get(person).length) : []
+      var wpoints = []
+      if(traces.get(person).length > 2){
+        for(var w of traces.get(person).slice(1, traces.get(person).length-1))
+        wpoints.push({
+          location: new google.maps.LatLng(w['Latitude'], w['Longitude']),
+          stopover:true
+        })
+      }
+      var request = {
+        origin: {
+          query: `${traces.get(person)[0]['Latitude']} ${traces.get(person)[0]['Longitude']}`
+        },
+        destination: {
+          query: `${traces.get(person)[traces.get(person).length-1]['Latitude']} ${traces.get(person)[traces.get(person).length-1]['Longitude']}`
+        },
+        travelMode: mode,
+        waypoints: wpoints
+      };
+      directionsService.route(request, function(result, status) {
+        console.log(result)
+        if (status == 'OK') {
+          directionsRenderer.setDirections(result);
+        }
+      });
+    }
+  }
 })();
