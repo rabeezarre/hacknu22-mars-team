@@ -15,16 +15,7 @@
 import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import case1 from '/src/assets/cases/dev1.json' assert {type: 'json'}
-import case2 from '/src/assets/cases/dev2.json' assert {type: 'json'}
-import case3 from '/src/assets/cases/dev3.json' assert {type: 'json'}
-import case4 from '/src/assets/cases/dev4.json' assert {type: 'json'}
-import case5 from '/src/assets/cases/dev5.json' assert {type: 'json'}
-import case6 from '/src/assets/cases/dev6.json' assert {type: 'json'}
-import case7 from '/src/assets/cases/dev7.json' assert {type: 'json'}
-import case8 from '/src/assets/cases/dev8.json' assert {type: 'json'}
-import case9 from '/src/assets/cases/dev9.json' assert {type: 'json'}
-import case10 from '/src/assets/cases/dev10.json' assert {type: 'json'}
+import cases from '/src/assets/cases.json' assert {type: 'json'}
 
 const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
@@ -145,5 +136,24 @@ function initWebGLOverlayView(map) {
   //reading props
   const urlParams = new URLSearchParams(window.location.search);
   const caseValue = urlParams.get('case');
-  console.log(caseValue);
+  var infos = []
+  var scene = [...cases[caseValue]]
+  scene = scene.sort(
+    function(){
+      if(a.Identifier > b.Identifier) return -1
+      if(a.Identifier < b.Identifier) return 1
+      if(a.Timestamp > b.Timestamp) return -1
+      if(a.Timestamp < b.Timestamp) return 1
+    }
+  )
+  for(var c in scene){
+    var s = `<h1 id="firstHeading" class="firstHeading">${c.Identifier}</h1>` +
+    `<p>Activity: ${c.Activity}</p>`+
+    `<p>Floor label: ${c['Floor label']}</p>`
+    if(scene.length > 0){
+      var max_time = Math.max(...scene.map(p => p.Timestamp))
+      s += `<p>Time: ${Math.round((max_time - c.Timestamp)/1000)} ago</p>`
+    }
+    infos.push(s)
+  }
 })()
