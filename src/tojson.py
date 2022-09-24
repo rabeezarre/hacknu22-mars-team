@@ -1,12 +1,15 @@
 import openpyxl
 import json
+from openpyxl.cell.read_only import EmptyCell
 
 workbook = openpyxl.load_workbook('hacknu-dev-data.xlsx')
 
 for sheet in workbook.worksheets:
-    with open(sheet.title+'.json', 'w') as file:
+    with open('assets/cases/'+sheet.title+'.json', 'w') as file:
         points = []
         for row in range(2,sheet.max_row+1):
+            if sheet.cell(row=row, column=1).value is None:
+                break
             points.append({
                 'Latitude':sheet.cell(row=row, column=1).value,
                 'Longitude':sheet.cell(row=row, column=2).value,
