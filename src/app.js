@@ -91,33 +91,54 @@ function initWebGLOverlayView(map, caseValue) {
     scene.add(accuracy);
 
 //load floor line
-const dir1 = new THREE.Vector3( 0, 0, 1 );
-dir1.normalize();
-const origin = new THREE.Vector3( 0, 0, -json_altitude);
-const length = json_altitude-10;
-const hex = 0x0fc5ff;
-const arrowHelper1 = new THREE.ArrowHelper( dir1, origin, length, hex, 5, 3 );
-scene.add(arrowHelper1);
-const myText = new Text()
-scene.add(myText)
-myText.text = floor
-myText.fontSize = 1.0
-myText.position.z = json_altitude-10
-myText.color = 0x9966FF
+if(floor !== 'null'){
+  const dir1 = new THREE.Vector3( 0, 0, 1 );
+  dir1.normalize();
+  const origin = new THREE.Vector3( 0, 0, -json_altitude);
+  const length = json_altitude-10;
+  const hex = 0x0fc5ff;
+  const arrowHelper1 = new THREE.ArrowHelper( dir1, origin, length, hex, 5, 3 );
+  scene.add(arrowHelper1);
+  const myText = new Text()
+  scene.add(myText)
+  myText.text = floor
+  myText.fontSize = 1.0
+  myText.position.z = json_altitude-10
+  myText.color = 0x9966FF
 
-// Update the rendering:
-myText.sync()
+  // Update the rendering:
+  myText.sync()
+}
 
     // load the model
-    if(cases[caseValue][0]['Activity'] === 'walking'){
-      var source = 'assets/3d_models/Assem_walking.glb'
-    } else if (cases[caseValue][0]['Activity'] === 'running'){
-      var source = 'assets/3d_models/Alua_running.glb'
-    } else if(cases[caseValue][0]['Activity'] === 'UNKNOWN'){
-      var source = 'assets/3d_models/Alua_standing.glb'
-    } else {
-      var source = 'assets/3d_models/Yerzhan_standing.glb'
+    console.log(cases[caseValue][cases[caseValue].length-1])
+    if(cases[caseValue][cases[caseValue].length-1]['Identifier'] === 'Alice'){
+      console.log('test')
+      if(cases[caseValue][0]['Activity'] === 'walking'){
+        var source = '/assets/3d_models/Alua_standing.glb'
+      } else if(cases[caseValue][0]['Activity'] === 'UNKNOWN'){
+        var source = '/assets/3d_models/Alua_standing.glb'
+      }
+    } else if (cases[caseValue][0]['Identifier'] === 'Bob'){
+      if(cases[caseValue][0]['Activity'] === 'walking'){
+        var source = '/assets/3d_models/Medet_standing.glb'
+      } else if(cases[caseValue][0]['Activity'] === 'running'){
+        var source = '/assets/3d_models/Medet_running.glb'
+      } else {
+        var source = '/assets/3d_models/Medet_standing.glb'
+      }
+    } else if(cases[caseValue][0]['Identifier'] === 'null'){
+      var source = '/assets/3d_models/Tyrannosaurus rex.glb'
+    } else if(cases[caseValue][0]['Identifier'] === 'Jane'){
+      if(cases[caseValue][0]['Activity'] === 'walking'){
+        var source = '/assets/3d_models/Playful dog.glb'
+      }
+    } else if(cases[caseValue][0]['Identifier'] === 'Chalie'){
+      var source = '/assets/3d_models/poly.glb'
+    } else if(cases[caseValue][0]['Identifier'] === 'Tenzing'){
+      var source = '/assets/3d_models/maral_demo.glb'
     }
+    // var source = '/assets/3d_models/Alua_running.glb'
     loader.load(
       source,
       gltf => {     
