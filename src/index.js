@@ -1,14 +1,9 @@
 (async () => {
-    // const div = document.createElement("BUTTON");
     for (let i = 1; i <= 10; i++) {
         document.getElementById('container').innerHTML += '<div class="fsm hacknu">\n' +
             '    <text>Case '+i+'</text>\n' +
             '  </div>';
     }
-
-    // const btn = document.createElement("BUTTON");
-    // btn.innerHTML = "I am a button";
-    // document.body.appendChild(btn);
 
     var fsmActual = document.createElement('div');
     fsmActual.setAttribute('id', 'fsm_actual');

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="86cd6457-f286-4531-97d6-a27abf7d1529" name="Changes" comment="">
+    <list default="true" id="86cd6457-f286-4531-97d6-a27abf7d1529" name="Changes" comment="index finished">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/map.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/map.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,8 +59,23 @@
       <option name="presentableId" value="Default" />
       <updated>1663949314306</updated>
       <workItem from="1663949315387" duration="2691000" />
-      <workItem from="1664048170460" duration="4824000" />
+      <workItem from="1664048170460" duration="6616000" />
     </task>
+    <task id="LOCAL-00001" summary="index finished">
+      <created>1664054418152</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1664054418152</updated>
+    </task>
+    <task id="LOCAL-00002" summary="index finished">
+      <created>1664054440900</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1664054440900</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -74,5 +91,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="index finished" />
+    <option name="LAST_COMMIT_MESSAGE" value="index finished" />
   </component>
 </project>
