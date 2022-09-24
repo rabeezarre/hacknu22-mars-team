@@ -65,8 +65,13 @@ function initWebGLOverlayView(map) {
   
     const accuracy = new THREE.Mesh( geometry, material );
     accuracy.rotation.x = Math.PI/2;
-    scene.add(accuracy);
 
+    const level = new THREE.PlaneGeometry(1,1)
+    const level_material = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide} );
+    const plane = new THREE.Mesh( level, level_material );
+
+    scene.add(accuracy);
+    scene.add(plane)
     loader.load(
       source,
       gltf => {     
@@ -137,7 +142,7 @@ function initWebGLOverlayView(map) {
   const urlParams = new URLSearchParams(window.location.search);
   const caseValue = urlParams.get('case');
   var infos = []
-  var scene = [...cases[caseValue]]
+  var scene = [...cases[caseValue-1]]
   scene = scene.sort(
     function(){
       if(a.Identifier > b.Identifier) return -1
@@ -150,7 +155,8 @@ function initWebGLOverlayView(map) {
     var s = `<h1 id="firstHeading" class="firstHeading">${c.Identifier}</h1>` +
     `<p>Activity: ${c.Activity}</p>`+
     `<p>Floor label: ${c['Floor label']}</p>`
-    if(scene.length > 0){
+    if(scene.length > 1){
+      console.log
       var max_time = Math.max(...scene.map(p => p.Timestamp))
       s += `<p>Time: ${Math.round((max_time - c.Timestamp)/1000)} ago</p>`
     }
