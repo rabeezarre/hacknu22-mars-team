@@ -158,15 +158,13 @@ function initWebGLOverlayView(map, caseValue) {
   const map = await initMap(caseValue-1);
   initWebGLOverlayView(map, caseValue-1);
 
-  var directionsService = new google.maps.DirectionsService();
-
   var points = [...cases[caseValue-1]]
   points = points.sort(
     function(a,b){
       if(a.Identifier > b.Identifier) return -1
       if(a.Identifier < b.Identifier) return 1
-      if(a.Timestamp > b.Timestamp) return -1
-      if(a.Timestamp < b.Timestamp) return 1
+      if(a.Timestamp > b.Timestamp) return 1
+      if(a.Timestamp < b.Timestamp) return -1
     }
   )
   var traces = new Map()
@@ -181,6 +179,8 @@ function initWebGLOverlayView(map, caseValue) {
 
   for(const person of traces.keys()){
     var color = Math.floor(Math.random()*16777215).toString(16)
+    var lastTime = traces.get(person)[traces.get(person).length-1]['Timestamp']
+    console.log(lastTime)
     traces.get(person).forEach(function(point){
         var marker = new google.maps.Marker({
           position:{lat:point['Latitude'], lng:point['Longitude']},
@@ -191,6 +191,8 @@ function initWebGLOverlayView(map, caseValue) {
           <h3>Identifier: ${point['Identifier']}</h3>
           <p>Activity: ${point['Activity']}</p>
         `
+        contentString += point['Floor label'] !== 'null' ? `<p>Floor label: ${point['Floor label']}</p>` : ''
+        contentString += `<p>Measured ${(Math.round(lastTime - point['Timestamp'])/1000)} seconds ago</p>`
         const infowindow = new google.maps.InfoWindow({
           content: contentString,
         });
@@ -205,10 +207,12 @@ function initWebGLOverlayView(map, caseValue) {
       }
     )
     if(traces.get(person).length > 1){
+      var directionsService = new google.maps.DirectionsService();
       var directionsRenderer = new google.maps.DirectionsRenderer({
         polylineOptions: {
           strokeColor: `#${color}`,
           strokeOpacity:0.8,
+          geodesic:true
         },
         suppressMarkers: true
       });
