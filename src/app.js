@@ -33,25 +33,47 @@ const apiOptions = {
   version: "beta"
 };
 
-const mapOptions = {
-  "tilt": 0,
-  "heading": 0,
-  "zoom": 18,
-  "center": { lat: json_latitude, lng: json_longitude },
-  "mapId": "9221e2194dfa8f5e"
-}
+async function initMap(caseValue) {    
 
-async function initMap() {    
   const mapDiv = document.getElementById("map");
   const apiLoader = new Loader(apiOptions);
   await apiLoader.load();
-  return new google.maps.Map(mapDiv, mapOptions);
+
+  var sizeOfCase = cases[caseValue].length;
+
+  var lat = cases[caseValue][sizeOfCase-1]["Latitude"];
+  var lng = cases[caseValue][sizeOfCase-1]["Longitude"];
+
+  return new google.maps.Map(mapDiv, {
+    "tilt": 0,
+    "heading": 0,
+    "zoom": 18,
+    "center": { lat, lng },
+    "mapId": "9221e2194dfa8f5e"
+  });
 }
 
-
-function initWebGLOverlayView(map) {  
+function initWebGLOverlayView(map, caseValue) {  
   let scene, renderer, camera, loader;
   const webGLOverlayView = new google.maps.WebGLOverlayView();
+  var sizeOfCase = cases[caseValue].length;
+  loader = new GLTFLoader();
+
+  //json properties
+  var json_latitude = cases[caseValue][sizeOfCase-1]["Latitude"];
+  var json_longitude = cases[caseValue][sizeOfCase-1]["Longitude"];
+  var json_vertical_acc = cases[caseValue][sizeOfCase-1]["Vertical accuracy"];
+  var json_horizontal_acc = cases[caseValue][sizeOfCase-1]["Horizontal accuracy"];
+  var json_altitude = cases[caseValue][sizeOfCase-1]["Altitude"];
+  var json_conf_acc = cases[caseValue][sizeOfCase-1]["Confidence in location accuracy"];
+
+  const mapOptions = {
+    "tilt": 0,
+    "heading": 0,
+    "zoom": 18,
+    "center": { lat: json_latitude, lng: json_longitude },
+    "mapId": "9221e2194dfa8f5e"
+  }
 
   webGLOverlayView.onAdd = () => {   
     // set up the scene
@@ -62,22 +84,7 @@ function initWebGLOverlayView(map) {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.25);
     directionalLight.position.set(0.5, -1, 0.5);
     scene.add(directionalLight);
-  
-    // load the model    
-    loader = new GLTFLoader();               
-    var source = 'assets/3d_models/maral_demo.glb';
-    var model_ver_scale = 10;
-    var model_hor_scale = 10;
-    var model_alt_scale = 10;
-
-    var marker = new google.maps.Marker({
-      position: {
-        lat: mapOptions.center.lat, 
-        lng: mapOptions.center.lng,
-      },
-      map:map,
-      title: "Click",
-    });
+    
     for(var c of cases[5]){
       new google.maps.Marker({
         position:{
@@ -89,21 +96,6 @@ function initWebGLOverlayView(map) {
       })
     }
 
-      const contentString = 
-      '<p>Activity: ' + json_activity +'<p>'+
-      '<p>Floor: '+ json_floor +'<p>' +
-      '<p>Timestamp: '+ json_timestamp +'<p>'
-      ;
-
-    // const contentString = 
-    // '<p>Activity:<p>'+
-    // '<p>Floor: <p>'
-    // '<p>Timestamp: <p>';
-  
-    const infowindow = new google.maps.InfoWindow({
-      content: contentString,
-    });
-
     marker.addListener("click", () => {
       infowindow.open({
         anchor: marker,
@@ -113,44 +105,29 @@ function initWebGLOverlayView(map) {
       map.setCenter(marker.getPosition());
     });
 
-    var cylinder_radius = model_hor_scale+json_horizontal_acc;
-    var cylinder_height = model_ver_scale+json_vertical_acc;
-  
-    var cylinder = new THREE.CylinderGeometry( cylinder_radius, cylinder_radius, cylinder_height, 36 );
+    // load the accuracy cylinder
+    var cylinder_radius = Math.trunc(10 + json_horizontal_acc*10);
+    var cylinder_height = Math.trunc(10 + json_vertical_acc*10);
+    var cylinder = new THREE.CylinderGeometry(cylinder_radius, cylinder_radius, cylinder_height, 36);
     var cylinder_material = new THREE.MeshBasicMaterial( {
       color: 0x9fc5e8, 
-      opacity: 0.6, 
+      opacity: json_conf_acc, 
       transparent: true
     } );
     const accuracy = new THREE.Mesh( cylinder, cylinder_material );
     accuracy.rotation.x = Math.PI/2;
     scene.add(accuracy);
 
-    // var level = new THREE.PlaneGeometry(10,10)
-    // var level_material = new THREE.MeshBasicMaterial({
-    //   color:0xff0000,
-    //   side:THREE.DoubleSide
-    // })
-    // const plane = new THREE.Mesh(level, level_material)
-    // scene.add(plane)
-    // plane.position.set(5, 0, 0)
-
+    // load the model
+    var source = 'assets/3d_models/maral_demo.glb';
     loader.load(
       source,
       gltf => {     
-        gltf.scene.scale.set(model_hor_scale, model_ver_scale, model_alt_scale);
+        gltf.scene.scale.set(10,10,10);
         gltf.scene.rotation.x = Math.PI/2; // rotations are in radians
         scene.add(gltf.scene);           
       }
     );
-    // var line = new THREE.Curves( 20, 20, 40, 36 );
-    // var line_material = new THREE.MeshBasicMaterial( {
-    //   color: 0x9fc5e8, 
-    //   opacity: 0.6,
-    //   transparent: true
-    // } );
-    // const trace = new THREE.Line3(line, line_material);
-
   }
   
   webGLOverlayView.onContextRestored = ({gl}) => {    
@@ -190,7 +167,6 @@ function initWebGLOverlayView(map) {
         lat: mapOptions.center.lat,
         lng: mapOptions.center.lng,
         altitude: json_altitude
-        //altitude: 0
     }
 
     const matrix = transformer.fromLatLngAltitude(latLngAltitudeLiteral);
@@ -205,16 +181,18 @@ function initWebGLOverlayView(map) {
   webGLOverlayView.setMap(map);
 }
 
-(async () => {        
-  const map = await initMap();
-  initWebGLOverlayView(map);
-
-  console.log(cases);
-  console.log(cases[0][0]["Latitude"]);
-
-  //reading props
+(async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const caseValue = urlParams.get('case');
+
+  console.log(caseValue);
+
+  const map = await initMap(caseValue-1);
+  initWebGLOverlayView(map, caseValue-1);
+
+ 
+  //reading props
+  
   var infos = []
   var scene = [...cases[caseValue]]
   scene = scene.sort(
