@@ -87,6 +87,15 @@ function initWebGLOverlayView(map, caseValue) {
     accuracy.rotation.x = Math.PI/2;
     scene.add(accuracy);
 
+//load floor line
+const dir1 = new THREE.Vector3( 0, 0, 1 );
+dir1.normalize();
+const origin = new THREE.Vector3( 0, 0, -json_altitude);
+const length = json_altitude-10;
+const hex = 0x0fc5ff;
+const arrowHelper1 = new THREE.ArrowHelper( dir1, origin, length, hex, 5, 3 );
+scene.add(arrowHelper1);
+
     // load the model
     var source = 'assets/3d_models/maral_demo.glb';
     loader.load(
