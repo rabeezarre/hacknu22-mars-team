@@ -17,6 +17,17 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import cases from '/src/assets/cases.json' assert {type: 'json'}
 
+//json properties
+var case1 = cases[0][0];
+var json_latitude = case1["Latitude"];
+var json_longitude = case1["Longitude"];
+var json_vertical_acc = case1["Vertical accuracy"];
+var json_horizontal_acc = case1["Horizontal accuracy"];
+var json_altitude = case1["Altitude"];
+var json_activity = case1["Activity"];
+var json_floor = case1["Floor label"];
+var json_timestamp = case1["Timestamp"];
+
 const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
   version: "beta"
@@ -26,7 +37,7 @@ const mapOptions = {
   "tilt": 0,
   "heading": 0,
   "zoom": 18,
-  "center": { lat: 35.66093428, lng: 139.7290334 },
+  "center": { lat: json_latitude, lng: json_longitude },
   "mapId": "9221e2194dfa8f5e"
 }
 
@@ -54,32 +65,91 @@ function initWebGLOverlayView(map) {
   
     // load the model    
     loader = new GLTFLoader();               
-    const source = 'assets/3d_models/maral_demo.glb';
+    var source = 'assets/3d_models/maral_demo.glb';
+    var model_ver_scale = 10;
+    var model_hor_scale = 10;
+    var model_alt_scale = 10;
 
-    const geometry = new THREE.CylinderGeometry( 20, 20, 40, 36 );
-    const material = new THREE.MeshBasicMaterial( {
+    var marker = new google.maps.Marker({
+      position: {
+        lat: mapOptions.center.lat, 
+        lng: mapOptions.center.lng,
+      },
+      map:map,
+      title: "Click",
+    });
+    for(var c of cases[5]){
+      new google.maps.Marker({
+        position:{
+          lat: c['Latitude'],
+          lng: c['Longitude']
+        },
+        map:map,
+        title: c['Identifier']
+      })
+    }
+
+      const contentString = 
+      '<p>Activity: ' + json_activity +'<p>'+
+      '<p>Floor: '+ json_floor +'<p>' +
+      '<p>Timestamp: '+ json_timestamp +'<p>'
+      ;
+
+    // const contentString = 
+    // '<p>Activity:<p>'+
+    // '<p>Floor: <p>'
+    // '<p>Timestamp: <p>';
+  
+    const infowindow = new google.maps.InfoWindow({
+      content: contentString,
+    });
+
+    marker.addListener("click", () => {
+      infowindow.open({
+        anchor: marker,
+        map:map,
+        shouldFocus: false,
+      });
+      map.setCenter(marker.getPosition());
+    });
+
+    var cylinder_radius = model_hor_scale+json_horizontal_acc;
+    var cylinder_height = model_ver_scale+json_vertical_acc;
+  
+    var cylinder = new THREE.CylinderGeometry( cylinder_radius, cylinder_radius, cylinder_height, 36 );
+    var cylinder_material = new THREE.MeshBasicMaterial( {
       color: 0x9fc5e8, 
       opacity: 0.6, 
       transparent: true
     } );
-  
-    const accuracy = new THREE.Mesh( geometry, material );
+    const accuracy = new THREE.Mesh( cylinder, cylinder_material );
     accuracy.rotation.x = Math.PI/2;
-
-    const level = new THREE.PlaneGeometry(1,1)
-    const level_material = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide} );
-    const plane = new THREE.Mesh( level, level_material );
-
     scene.add(accuracy);
-    scene.add(plane)
+
+    // var level = new THREE.PlaneGeometry(10,10)
+    // var level_material = new THREE.MeshBasicMaterial({
+    //   color:0xff0000,
+    //   side:THREE.DoubleSide
+    // })
+    // const plane = new THREE.Mesh(level, level_material)
+    // scene.add(plane)
+    // plane.position.set(5, 0, 0)
+
     loader.load(
       source,
       gltf => {     
-        gltf.scene.scale.set(25,25,25);
+        gltf.scene.scale.set(model_hor_scale, model_ver_scale, model_alt_scale);
         gltf.scene.rotation.x = Math.PI/2; // rotations are in radians
         scene.add(gltf.scene);           
       }
     );
+    // var line = new THREE.Curves( 20, 20, 40, 36 );
+    // var line_material = new THREE.MeshBasicMaterial( {
+    //   color: 0x9fc5e8, 
+    //   opacity: 0.6,
+    //   transparent: true
+    // } );
+    // const trace = new THREE.Line3(line, line_material);
 
   }
   
@@ -119,7 +189,8 @@ function initWebGLOverlayView(map) {
     const latLngAltitudeLiteral = {
         lat: mapOptions.center.lat,
         lng: mapOptions.center.lng,
-        altitude: 0
+        altitude: json_altitude
+        //altitude: 0
     }
 
     const matrix = transformer.fromLatLngAltitude(latLngAltitudeLiteral);
@@ -138,11 +209,14 @@ function initWebGLOverlayView(map) {
   const map = await initMap();
   initWebGLOverlayView(map);
 
+  console.log(cases);
+  console.log(cases[0][0]["Latitude"]);
+
   //reading props
   const urlParams = new URLSearchParams(window.location.search);
   const caseValue = urlParams.get('case');
   var infos = []
-  var scene = [...cases[caseValue-1]]
+  var scene = [...cases[caseValue]]
   scene = scene.sort(
     function(){
       if(a.Identifier > b.Identifier) return -1
@@ -155,11 +229,56 @@ function initWebGLOverlayView(map) {
     var s = `<h1 id="firstHeading" class="firstHeading">${c.Identifier}</h1>` +
     `<p>Activity: ${c.Activity}</p>`+
     `<p>Floor label: ${c['Floor label']}</p>`
-    if(scene.length > 1){
-      console.log
+    if(scene.length > 0){
       var max_time = Math.max(...scene.map(p => p.Timestamp))
       s += `<p>Time: ${Math.round((max_time - c.Timestamp)/1000)} ago</p>`
     }
     infos.push(s)
   }
+
+  const directionsService = new google.maps.DirectionsService();
+  const directionsRenderer = new google.maps.DirectionsRenderer({
+    preserveViewport: true,
+    suppressMarkers: true
+  });
+  directionsRenderer.setMap(map);
+  // directionsService.route({
+  //     origin: {
+  //       query: `${cases[5][0]['Latitude']} ${cases[5][0]['Longitude']}`,
+  //     },
+  //     destination: {
+  //       query: `${cases[5][9]['Latitude']} ${cases[5][9]['Longitude']}`,
+  //     },
+  //     travelMode: google.maps.TravelMode.BICYCLING,
+  //   })
+  //   .then((response) => {
+  //     console.log(response)
+  //     directionsRenderer.setDirections(response);
+  //   })
+  if (directionsRenderer.getMap() == null)
+        directionsRenderer.setMap(map);
+  var stops = []
+  for(var i = 1; i < cases[5].length-1; i++){
+    stops.push({
+      location:new google.maps.LatLng(cases[5][i]['Latitude'], cases[5][i]['Longitude']),
+      stopover:true
+    })
+  }
+  var request = {
+    origin: 
+    {
+      query: `40.78017131, -73.96810659`,
+    },
+    destination: {
+      query: `40.78047792, -73.96793906`,
+    },
+    travelMode: 'WALKING',
+    waypoints:stops
+  };
+  directionsService.route(request, function(result, status) {
+    if (status == 'OK') {
+      console.log(result)
+      directionsRenderer.setDirections(result);
+    }
+  });
 })()
