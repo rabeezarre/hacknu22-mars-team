@@ -196,26 +196,98 @@ function moveCameraSide(){
   const map = await initMap(caseValue-1);
   initWebGLOverlayView(map, caseValue-1);
 
-  //reading props
-  
-  // var infos = []
-  // var scene = [...cases[caseValue]]
-  // scene = scene.sort(
-  //   function(){
-  //     if(a.Identifier > b.Identifier) return -1
-  //     if(a.Identifier < b.Identifier) return 1
-  //     if(a.Timestamp > b.Timestamp) return -1
-  //     if(a.Timestamp < b.Timestamp) return 1
-  //   }
-  // )
-  // for(var c in scene){
-  //   var s = `<h1 id="firstHeading" class="firstHeading">${c.Identifier}</h1>` +
-  //   `<p>Activity: ${c.Activity}</p>`+
-  //   `<p>Floor label: ${c['Floor label']}</p>`
-  //   if(scene.length > 0){
-  //     var max_time = Math.max(...scene.map(p => p.Timestamp))
-  //     s += `<p>Time: ${Math.round((max_time - c.Timestamp)/1000)} ago</p>`
-  //   }
-  //   infos.push(s)
-  // }
+  var points = [...cases[caseValue-1]]
+  points = points.sort(
+    function(a,b){
+      if(a.Identifier > b.Identifier) return -1
+      if(a.Identifier < b.Identifier) return 1
+      if(a.Timestamp > b.Timestamp) return 1
+      if(a.Timestamp < b.Timestamp) return -1
+    }
+  )
+  var traces = new Map()
+  for(var p of points){
+    var identif = p.Identifier !== "null" ? p.Identifier : '?'
+    if(!traces.has(identif)){
+      traces.set(identif, [p])
+    } else {
+      traces.get(identif).push(p)
+    }
+  }
+
+  for(const person of traces.keys()){
+    var color = Math.floor(Math.random()*16777215).toString(16)
+    var lastTime = traces.get(person)[traces.get(person).length-1]['Timestamp']
+    console.log(lastTime)
+    traces.get(person).forEach(function(point){
+        var marker = new google.maps.Marker({
+          position:{lat:point['Latitude'], lng:point['Longitude']},
+          map,
+          title:person
+        })
+        var contentString = `
+          <h3>Identifier: ${point['Identifier']}</h3>
+          <p>Activity: ${point['Activity']}</p>
+        `
+        contentString += point['Floor label'] !== 'null' ? `<p>Floor label: ${point['Floor label']}</p>` : ''
+        contentString += `<p>Measured ${(Math.round(lastTime - point['Timestamp'])/1000)} seconds ago</p>`
+        const infowindow = new google.maps.InfoWindow({
+          content: contentString,
+        });
+      
+        marker.addListener("click", () => {
+          infowindow.open({
+            anchor: marker,
+            map,
+            shouldFocus: false,
+          });
+        });
+      }
+    )
+    if(traces.get(person).length > 1){
+      var directionsService = new google.maps.DirectionsService();
+      var directionsRenderer = new google.maps.DirectionsRenderer({
+        polylineOptions: {
+          strokeColor: `#${color}`,
+          strokeOpacity:0.8,
+          geodesic:true
+        },
+        suppressMarkers: true
+      });
+      directionsRenderer.setMap(map);
+      var mode = traces.get(person)[0]['Activity']
+      if(mode === 'UNKNOWN' || mode === 'running' || mode === 'walking'){
+        mode = 'WALKING'
+      } else if (mode === 'cycling'){
+        mode = 'BICYCLING'
+      } else {
+        mode = 'DRIVING'
+      }
+      var wpoints = traces.get(person).length > 2  ? traces.get(person).slice(1, traces.get(person).length) : []
+      var wpoints = []
+      if(traces.get(person).length > 2){
+        for(var w of traces.get(person).slice(1, traces.get(person).length-1))
+        wpoints.push({
+          location: new google.maps.LatLng(w['Latitude'], w['Longitude']),
+          stopover:true
+        })
+      }
+      var request = {
+        origin: {
+          query: `${traces.get(person)[0]['Latitude']} ${traces.get(person)[0]['Longitude']}`
+        },
+        destination: {
+          query: `${traces.get(person)[traces.get(person).length-1]['Latitude']} ${traces.get(person)[traces.get(person).length-1]['Longitude']}`
+        },
+        travelMode: mode,
+        waypoints: wpoints
+      };
+      directionsService.route(request, function(result, status) {
+        console.log(result)
+        if (status == 'OK') {
+          directionsRenderer.setDirections(result);
+        }
+      });
+    }
+  }
 })();
