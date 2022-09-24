@@ -14,6 +14,7 @@
 
 import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
+import {TextGeometry} from 'three'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import cases from '/src/assets/cases.json' assert {type: 'json'}
 
@@ -39,13 +40,15 @@ async function initMap(caseValue) {
     "center": { lat, lng },
     "mapId": "9221e2194dfa8f5e"
   });
-}
+} 
 
 function initWebGLOverlayView(map, caseValue) {  
   let scene, renderer, camera, loader;
+
   const webGLOverlayView = new google.maps.WebGLOverlayView();
   var sizeOfCase = cases[caseValue].length;
   loader = new GLTFLoader();
+  var accuracy;
 
   //json properties
   var json_latitude = cases[caseValue][sizeOfCase-1]["Latitude"];
@@ -54,6 +57,7 @@ function initWebGLOverlayView(map, caseValue) {
   var json_horizontal_acc = cases[caseValue][sizeOfCase-1]["Horizontal accuracy"];
   var json_altitude = cases[caseValue][sizeOfCase-1]["Altitude"];
   var json_conf_acc = cases[caseValue][sizeOfCase-1]["Confidence in location accuracy"];
+  var json_floor = cases[caseValue][sizeOfCase-1]["Floor label"];
 
   const mapOptions = {
     "tilt": 0,
@@ -83,9 +87,22 @@ function initWebGLOverlayView(map, caseValue) {
       opacity: json_conf_acc, 
       transparent: true
     } );
-    const accuracy = new THREE.Mesh( cylinder, cylinder_material );
+    accuracy = new THREE.Mesh( cylinder, cylinder_material );
     accuracy.rotation.x = Math.PI/2;
     scene.add(accuracy);
+
+    // load the floors
+    const material = new THREE.LineBasicMaterial({
+        color: 0x0000ff,
+        linewidth: 1
+    });
+    const points = [];
+    points.push( new THREE.Vector3( 0, 0, -10 ) );
+    points.push( new THREE.Vector3( 0, 0, -json_altitude ) );
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const line = new THREE.Line( geometry, material );
+    scene.add( line );
+
 
     // load the model
     var source = 'assets/3d_models/maral_demo.glb';
@@ -110,25 +127,28 @@ function initWebGLOverlayView(map, caseValue) {
     renderer.autoClear = false;
 
     // wait to move the camera until the 3D model loads    
-    loader.manager.onLoad = () => {        
-      renderer.setAnimationLoop(() => {
-        map.moveCamera({
-          "tilt": mapOptions.tilt,
-          "heading": mapOptions.heading,
-          "zoom": mapOptions.zoom
-        });            
-        
-        // rotate the map 360 degrees 
-        if (mapOptions.tilt < 67.5) {
-          mapOptions.tilt += 0.5
-        } else if (mapOptions.heading <= 360) {
-          mapOptions.heading += 0.2;
-        } else {
-          renderer.setAnimationLoop(null)
-        }
-      });        
+    loader.manager.onLoad = () => {    
+
+        accuracy.cylinder_radius = 3000;
+
+        renderer.setAnimationLoop(() => {
+          map.moveCamera({
+            "tilt": mapOptions.tilt,
+            "heading": mapOptions.heading,
+            "zoom": mapOptions.zoom
+          });            
+          
+          // rotate the map 360 degrees 
+          if (mapOptions.tilt < 67.5) {
+            mapOptions.tilt += 0.5
+          } else if (mapOptions.heading <= 360) {
+            mapOptions.heading += 0.2;
+          } else {
+            renderer.setAnimationLoop(null)
+          }
+        });
+      }
     }
-  }
 
   webGLOverlayView.onDraw = ({gl, transformer}) => {
     // update camera matrix to ensure the model is georeferenced correctly on the map
@@ -150,12 +170,28 @@ function initWebGLOverlayView(map, caseValue) {
   webGLOverlayView.setMap(map);
 }
 
+
+function moveCameraUp() {
+    console.log("moveCameraUp");
+    map.moveCamera({
+        "tilt": 0,
+        "heading": 0,
+        "zoom": 20
+      }); 
+}
+
+function moveCameraSide(){
+    map.moveCamera({
+        "tilt": 90,
+        "heading": 0,
+        "zoom": 20
+      }); 
+}
+
 (async () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const caseValue = urlParams.get('case');
-
-  console.log(caseValue);
 
   const map = await initMap(caseValue-1);
   initWebGLOverlayView(map, caseValue-1);
