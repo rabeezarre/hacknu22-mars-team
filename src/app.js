@@ -15,7 +15,16 @@
 import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-//import {Text} from 'troika-three-text'
+import case1 from '/src/assets/cases/dev1.json' assert {type: 'json'}
+import case2 from '/src/assets/cases/dev2.json' assert {type: 'json'}
+import case3 from '/src/assets/cases/dev3.json' assert {type: 'json'}
+import case4 from '/src/assets/cases/dev4.json' assert {type: 'json'}
+import case5 from '/src/assets/cases/dev5.json' assert {type: 'json'}
+import case6 from '/src/assets/cases/dev6.json' assert {type: 'json'}
+import case7 from '/src/assets/cases/dev7.json' assert {type: 'json'}
+import case8 from '/src/assets/cases/dev8.json' assert {type: 'json'}
+import case9 from '/src/assets/cases/dev9.json' assert {type: 'json'}
+import case10 from '/src/assets/cases/dev10.json' assert {type: 'json'}
 
 const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
@@ -54,7 +63,7 @@ function initWebGLOverlayView(map) {
   
     // load the model    
     loader = new GLTFLoader();               
-    const source = 'maral_demo.glb';
+    const source = 'assets/3d_models/maral_demo.glb';
 
     const geometry = new THREE.CylinderGeometry( 20, 20, 40, 36 );
     const material = new THREE.MeshBasicMaterial( {
@@ -131,5 +140,10 @@ function initWebGLOverlayView(map) {
 
 (async () => {        
   const map = await initMap();
-  initWebGLOverlayView(map);    
-})();
+  initWebGLOverlayView(map);
+
+  //reading props
+  const urlParams = new URLSearchParams(window.location.search);
+  const caseValue = urlParams.get('case');
+  console.log(caseValue);
+})()
