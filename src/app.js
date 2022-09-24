@@ -16,6 +16,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import cases from '/src/assets/cases.json' assert {type: 'json'}
+import {Text} from 'troika-three-text'
 
 const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
@@ -54,6 +55,7 @@ function initWebGLOverlayView(map, caseValue) {
   var json_horizontal_acc = cases[caseValue][sizeOfCase-1]["Horizontal accuracy"];
   var json_altitude = cases[caseValue][sizeOfCase-1]["Altitude"];
   var json_conf_acc = cases[caseValue][sizeOfCase-1]["Confidence in location accuracy"];
+  var floor = cases[caseValue][sizeOfCase-1]['Floor label']
 
   const mapOptions = {
     "tilt": 0,
@@ -87,6 +89,25 @@ function initWebGLOverlayView(map, caseValue) {
     accuracy.rotation.x = Math.PI/2;
     // accuracy.position.z = json_altitude
     scene.add(accuracy);
+
+//load floor line
+const dir1 = new THREE.Vector3( 0, 0, 1 );
+dir1.normalize();
+const origin = new THREE.Vector3( 0, 0, -json_altitude);
+const length = json_altitude-10;
+const hex = 0x0fc5ff;
+const arrowHelper1 = new THREE.ArrowHelper( dir1, origin, length, hex, 5, 3 );
+scene.add(arrowHelper1);
+const myText = new Text()
+scene.add(myText)
+myText.text = floor
+myText.fontSize = 1.0
+myText.position.z = json_altitude-10
+myText.color = 0x9966FF
+
+// Update the rendering:
+myText.sync()
+
     // load the model
     var source = 'assets/3d_models/maral_demo.glb';
     loader.load(
