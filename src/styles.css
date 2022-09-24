@@ -5,3 +5,101 @@ body,
     margin: 0;
     padding: 0;
 }
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+.header{
+    width: 100%;
+    height:100vh;
+}
+.side-nav{
+    width: 250px ;
+    height: 100% ;
+    background: #c802e7;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 20px 30px ;
+}
+.logo{
+    display: block;
+    margin-bottom: 150px;
+}
+.logo_img{
+    width: 170px;
+    box-align: center;
+}
+.nav-links{
+    list-style: none;
+    position: relative;
+    left: 15px;
+}
+.nav-links li{
+    padding: 5px 0;
+}
+.nav-links li a{
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+}
+.nav-links li a i{
+    font-size: 22px;
+    margin-right: 20px;
+}
+.active{
+    background: #fff;
+    width: 100%;
+    height: 47px;
+    position: absolute;
+    left:0;
+    top: 0;
+    z-index: -1;
+    border-radius: 6px;
+    box-shadow: 0px 5px 10px rgba(255,255,255,0.4);
+    display: none;
+    transition: 0.5s;
+}
+.nav-links li:hover a{
+    color: #c802e7;
+    transition: 0.3s; 
+}
+.nav-links li:hover ~ .active{
+    display: block;
+}
+.nav-links li:nth-child(1):hover ~ .active{
+    top: 2.6%;
+}
+.nav-links li:nth-child(2):hover ~ .active{
+    top: 22.6%;
+}
+.nav-links li:nth-child(3):hover ~ .active{
+    top: 42.6%;
+}
+.nav-links li:nth-child(4):hover ~ .active{
+    top: 62.6%;
+}
+.nav-links li:nth-child(5):hover ~ .active{
+    top: 82.6%;
+}
+@media only screen and (max-width: 600px){
+    .side-nav{
+        width: 110px;
+    }
+    .logo_img{
+        display:none;
+    }
+    .nav-links li a p{
+        display: none;
+    }
+    .nav-links li a i{
+        margin-right: 0;
+    }
+    .nav-links li a{
+       justify-content: center;
+    }
+}

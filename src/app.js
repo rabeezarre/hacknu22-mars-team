@@ -177,6 +177,7 @@ function initWebGLOverlayView(map, caseValue) {
     }
   }
 
+<<<<<<< HEAD
   for(const person of traces.keys()){
     var color = Math.floor(Math.random()*16777215).toString(16)
     var lastTime = traces.get(person)[traces.get(person).length-1]['Timestamp']
@@ -253,3 +254,229 @@ function initWebGLOverlayView(map, caseValue) {
     }
   }
 })();
+=======
+  const directionsService = new google.maps.DirectionsService();
+  const directionsRenderer = new google.maps.DirectionsRenderer({
+    preserveViewport: true,
+    suppressMarkers: true
+  });
+  directionsRenderer.setMap(map);
+  // directionsService.route({
+  //     origin: {
+  //       query: `${cases[5][0]['Latitude']} ${cases[5][0]['Longitude']}`,
+  //     },
+  //     destination: {
+  //       query: `${cases[5][9]['Latitude']} ${cases[5][9]['Longitude']}`,
+  //     },
+  //     travelMode: google.maps.TravelMode.BICYCLING,
+  //   })
+  //   .then((response) => {
+  //     console.log(response)
+  //     directionsRenderer.setDirections(response);
+  //   })
+  if (directionsRenderer.getMap() == null)
+        directionsRenderer.setMap(map);
+  var stops = []
+  for(var i = 1; i < cases[5].length-1; i++){
+    stops.push({
+      location:new google.maps.LatLng(cases[5][i]['Latitude'], cases[5][i]['Longitude']),
+      stopover:true
+    })
+  }
+  var request = {
+    origin: 
+    {
+      query: `40.78017131, -73.96810659`,
+    },
+    destination: {
+      query: `40.78047792, -73.96793906`,
+    },
+    travelMode: 'WALKING',
+    waypoints:stops
+  };
+
+  directionsService.route(request, function(result, status) {
+    if (status == 'OK') {
+      console.log(result)
+      directionsRenderer.setDirections(result);
+    }
+  });
+  // install Tweenjs with npm i @tweenjs/tween.js
+  new Tween(mapOptions) // Create a new tween that modifies 'cameraOptions'.
+    .to({ tilt: 65, heading: 90, zoom: 18 }, 15000) // Move to destination in 15 second.
+    .easing(Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+    .onUpdate(() => {
+      map.moveCamera(mapOptions);
+    })
+    .start(); // Start the tween immediately.
+
+  // Setup the animation loop.
+  function animate() {
+    requestAnimationFrame(animate);
+    update(time);
+  }
+
+  requestAnimationFrame(animate);
+})()
+var weatherLayer = new google.maps.weather.WeatherLayer({
+  temperatureUnits: google.maps.weather.TemperatureUnit.FAHRENHEIT
+});
+weatherLayer.setMap(map);
+
+var map;
+var polyline;
+var bounds;
+var linePartArr = [];
+var lineCoordinates = [
+  { lat: cases[5][i]['Latitude'], lng: cases[5][i]['Longitude']},
+];
+//timeout because jquery script is loaded later that this js file on this page
+setTimeout(function () {
+    initializePolylineMap(52.52000, 5.28662);
+}, 50);
+ 
+//create the map
+function initializePolylineMap(lat, lng) {
+    //coord for the center of the map
+    var startpos = new google.maps.LatLng(lat, lng);
+ 
+    //map options
+    var options = {
+        zoom: 8,
+        center: startpos,
+        zoomControl: true,
+        mapTypeControl: false,
+        scaleControl: false,
+        streetViewControl: false,
+        rotateControl: false,
+        fullscreenControl: false,
+        mapTypeId: google.maps.MapTypeId.TERRAIN
+    };
+ 
+    //start the map
+    map = new google.maps.Map(document.getElementById('map_canvas'), options);
+ 
+    //add bounds
+    bounds = new google.maps.LatLngBounds();
+ 
+    //create the polyline
+    createPolyLine();
+ 
+    //animate the polyline drawing
+    animatePolyline();
+ 
+    //animate the icon
+    animateIcon();
+ 
+    //make an array of maps coordinates for the bounds
+    for (var i = 0; i < lineCoordinates.length; i++) {
+        var pos = new google.maps.LatLng(lineCoordinates[i].lat, lineCoordinates[i].lng);
+        bounds.extend(pos);
+    }
+ 
+    //fit the map within the bounds
+    map.fitBounds(bounds);
+}
+//add a polyline to the map
+function createPolyLine() {
+    //create a symbol to animate along the route
+    var lineSymbol = {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: '#566895',
+        fillOpacity: 1,
+        strokeColor: '#282c41',
+        strokeOpacity: 1,
+        strokeWeight: 2
+    };
+ 
+    //create a polyline
+    polyline = new google.maps.Polyline({
+        path: lineCoordinates,
+        strokeColor: '#f39e9e',
+        strokeWeight: 5,
+        icons: [
+            {
+                icon: lineSymbol,
+                offset: '100%'
+            },
+        ],
+        map: map
+    });
+}
+ 
+ 
+//animate the icon on the map
+function animateIcon() {
+    var lineOffset = 0;
+ 
+    //experiment with the speed based on the length of the line
+    var iconSpeed = 0.2;
+ 
+    //move the icon
+    setInterval(function () {
+        lineOffset = (lineOffset + iconSpeed) % 200;
+        var lineIcon = polyline.get('icons');
+        lineIcon[0].offset = lineOffset / 2 + '%';
+        polyline.set('icons', lineIcon);
+    }, 20);
+}
+ 
+ 
+//animate the drawing of the polyline
+function animatePolyline() {
+    var i = 0;
+    var pause = false;
+    var pauseLineRemove = 1500;
+    var pauseRedrawLine = 1000;
+ 
+    //experiment with the speed based on the total parts in the line
+    var drawSpeed = 50;
+ 
+    setInterval(function () {
+ 
+        //check if the end of the array is reached
+        if (i + 1 == lineCoordinates.length && !pause) {
+            pause = true;
+ 
+            //remove all the line parts, optionally with a delay to keep the fully drawn line on the map for a while
+            setTimeout(function () {
+                for (var j = 0; j < linePartArr.length; j++) {
+                    linePartArr[j].setMap(null);
+                }
+ 
+                linePartArr = [];
+            }, pauseLineRemove);
+ 
+            //delay the drawing of the next animated line
+            setTimeout(function () {
+                pause = false;
+                i = 0;
+            }, pauseRedrawLine + pauseLineRemove);
+        }
+ 
+        //create a line part between the current and next coordinate
+        if (!pause) {
+            var part = [];
+            part.push(lineCoordinates[i]);
+            part.push(lineCoordinates[i + 1]);
+ 
+            //create a polyline
+            var linePart = new google.maps.Polyline({
+                path: part,
+                strokeColor: '#ff0000',
+                strokeOpacity: 1,
+                strokeWeight: 5,
+                zIndex: i + 2,
+                map: map
+            });
+ 
+            //add the polyline to an array
+            linePartArr.push(linePart);
+ 
+            i++;
+        }
+ 
+    }, drawSpeed);
+}
+>>>>>>> f11150a (Menu)
