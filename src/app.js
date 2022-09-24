@@ -40,7 +40,7 @@ async function initMap() {
 function initWebGLOverlayView(map) {  
   let scene, renderer, camera, loader;
   const webGLOverlayView = new google.maps.WebGLOverlayView();
-  
+
   webGLOverlayView.onAdd = () => {   
     // set up the scene
     scene = new THREE.Scene();
@@ -53,7 +53,16 @@ function initWebGLOverlayView(map) {
   
     // load the model    
     loader = new GLTFLoader();               
-    const source = "pin.gltf";
+    const source = "Playful dog.glb";
+
+    const geometry = new THREE.SphereGeometry( 50, 32, 16 );
+    const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+    const accuracySphere = new THREE.Mesh( geometry, material);
+
+    accuracySphere.material.opacity = 0.6;
+    accuracySphere.material.transparent = true;
+
+    scene.add(accuracySphere);
     loader.load(
       source,
       gltf => {      
@@ -62,6 +71,7 @@ function initWebGLOverlayView(map) {
         scene.add(gltf.scene);           
       }
     );
+    
   }
   
   webGLOverlayView.onContextRestored = ({gl}) => {    
@@ -100,7 +110,7 @@ function initWebGLOverlayView(map) {
     const latLngAltitudeLiteral = {
         lat: mapOptions.center.lat,
         lng: mapOptions.center.lng,
-        altitude: 120
+        altitude: 0
     }
 
     const matrix = transformer.fromLatLngAltitude(latLngAltitudeLiteral);
