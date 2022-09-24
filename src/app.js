@@ -109,7 +109,15 @@ myText.color = 0x9966FF
 myText.sync()
 
     // load the model
-    var source = 'assets/3d_models/maral_demo.glb';
+    if(cases[caseValue][0]['Activity'] === 'walking'){
+      var source = 'assets/3d_models/Assem_walking.glb'
+    } else if (cases[caseValue][0]['Activity'] === 'running'){
+      var source = 'assets/3d_models/Alua_running.glb'
+    } else if(cases[caseValue][0]['Activity'] === 'UNKNOWN'){
+      var source = 'assets/3d_models/Alua_standing.glb'
+    } else {
+      var source = 'assets/3d_models/Yerzhan_standing.glb'
+    }
     loader.load(
       source,
       gltf => {     
