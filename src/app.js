@@ -97,6 +97,135 @@ function initWebGLOverlayView(map, caseValue) {
         scene.add(gltf.scene);           
       }
     );
+
+    var points = [...cases[caseValue]]
+    points = points.sort(
+      function(a,b){
+        if(a.Identifier > b.Identifier) return -1
+        if(a.Identifier < b.Identifier) return 1
+        if(a.Timestamp > b.Timestamp) return 1
+        if(a.Timestamp < b.Timestamp) return -1
+      }
+    )
+    var traces = new Map()
+    for(var p of points){
+      var identif = p.Identifier !== "null" ? p.Identifier : '?'
+      if(!traces.has(identif)){
+        traces.set(identif, [p])
+      } else {
+        traces.get(identif).push(p)
+      }
+    }
+
+    for(const person of traces.keys()){
+      var color = Math.floor(Math.random()*16777215).toString(16)
+      var lastTime = traces.get(person)[traces.get(person).length-1]['Timestamp']
+      traces.get(person).forEach(function(point){
+          var marker = new google.maps.Marker({
+            position:{lat:point['Latitude'], lng:point['Longitude']},
+            map,
+            title:person
+          })
+          var contentString = `
+            <h3>Identifier: ${point['Identifier']}</h3>
+            <p>Activity: ${point['Activity']}</p>
+          `
+          contentString += point['Floor label'] !== 'null' ? `<p>Floor label: ${point['Floor label']}</p>` : ''
+          contentString += `<p>Measured ${(Math.round(lastTime - point['Timestamp'])/1000)} seconds ago</p>`
+          const infowindow = new google.maps.InfoWindow({
+            content: contentString,
+          });
+          marker.addListener("click", (event) => {
+            loader.load(
+              'assets/3d_models/maral_demo.glb',
+              // called when resource is loaded
+              function ( object ) {
+                scene.add(object);
+                object.rotation.x = Math.PI/2;
+                object.scale.set(10,10,10);
+                object.position.set(10/Math.pow(2, mapZoom), 5.3, 5.6);
+                x = ((evt.clientX - canvasPosition.left) / canvas.width) * 2 - 1;
+                y = -((evt.clientY - canvasPosition.top) / canvas.height) * 2 + 1;
+                object.traverse( function ( child ) {
+                  if ( child instanceof THREE.Mesh ) {
+                    //child.material.ambient.setHex(0xFF0000);
+                    child.material.color.setHex(0xaa0000);
+                  }
+                } );
+                
+                object.visible = false;
+            
+                document.getElementById("hideShow").addEventListener("click", function(){
+                  if(objHidden) {
+                    objHidden = false;
+                    // code to show object
+            
+                    object.visible = true;
+                  } else {
+                    objHidden = true;
+                    // code to hide object
+                    
+                    object.visible = false;
+                  }
+                });
+              },		
+            );
+            infowindow.open({
+              anchor: marker,
+              map,
+              shouldFocus: false,
+            });
+          });
+        }
+      )
+      if(traces.get(person).length > 1){
+        var directionsService = new google.maps.DirectionsService();
+        var directionsRenderer = new google.maps.DirectionsRenderer({
+          polylineOptions: {
+            strokeColor: `#${color}`,
+            strokeOpacity:0.8,
+            geodesic:true
+          },
+          suppressMarkers: true
+        });
+        directionsRenderer.setMap(map);
+
+        var mode = traces.get(person)[0]['Activity']
+        if(mode === 'UNKNOWN' || mode === 'running' || mode === 'walking'){
+          mode = 'WALKING'
+        } else if (mode === 'cycling'){
+          mode = 'BICYCLING'
+        } else {
+          mode = 'DRIVING'
+        }
+        var wpoints = traces.get(person).length > 2  ? traces.get(person).slice(1, traces.get(person).length) : []
+        var wpoints = []
+        if(traces.get(person).length > 2){
+          for(var w of traces.get(person).slice(1, traces.get(person).length-1))
+          wpoints.push({
+            location: new google.maps.LatLng(w['Latitude'], w['Longitude']),
+            stopover:true
+          })
+        }
+        var request = {
+          origin: {
+            query: `${traces.get(person)[0]['Latitude']} ${traces.get(person)[0]['Longitude']}`
+          },
+          destination: {
+            query: `${traces.get(person)[traces.get(person).length-1]['Latitude']} ${traces.get(person)[traces.get(person).length-1]['Longitude']}`
+          },
+          travelMode: mode,
+          waypoints: wpoints
+        };
+        directionsService.route(request, function(result, status) {
+          console.log(result)
+          if (status == 'OK') {
+            directionsRenderer.setDirections(result);
+          }
+        });
+      }
+    }
+
   }
   
   webGLOverlayView.onContextRestored = ({gl}) => {    
@@ -157,99 +286,4 @@ function initWebGLOverlayView(map, caseValue) {
 
   const map = await initMap(caseValue-1);
   initWebGLOverlayView(map, caseValue-1);
-
-  var points = [...cases[caseValue-1]]
-  points = points.sort(
-    function(a,b){
-      if(a.Identifier > b.Identifier) return -1
-      if(a.Identifier < b.Identifier) return 1
-      if(a.Timestamp > b.Timestamp) return 1
-      if(a.Timestamp < b.Timestamp) return -1
-    }
-  )
-  var traces = new Map()
-  for(var p of points){
-    var identif = p.Identifier !== "null" ? p.Identifier : '?'
-    if(!traces.has(identif)){
-      traces.set(identif, [p])
-    } else {
-      traces.get(identif).push(p)
-    }
-  }
-
-  for(const person of traces.keys()){
-    var color = Math.floor(Math.random()*16777215).toString(16)
-    var lastTime = traces.get(person)[traces.get(person).length-1]['Timestamp']
-    console.log(lastTime)
-    traces.get(person).forEach(function(point){
-        var marker = new google.maps.Marker({
-          position:{lat:point['Latitude'], lng:point['Longitude']},
-          map,
-          title:person
-        })
-        var contentString = `
-          <h3>Identifier: ${point['Identifier']}</h3>
-          <p>Activity: ${point['Activity']}</p>
-        `
-        contentString += point['Floor label'] !== 'null' ? `<p>Floor label: ${point['Floor label']}</p>` : ''
-        contentString += `<p>Measured ${(Math.round(lastTime - point['Timestamp'])/1000)} seconds ago</p>`
-        const infowindow = new google.maps.InfoWindow({
-          content: contentString,
-        });
-      
-        marker.addListener("click", () => {
-          infowindow.open({
-            anchor: marker,
-            map,
-            shouldFocus: false,
-          });
-        });
-      }
-    )
-    if(traces.get(person).length > 1){
-      var directionsService = new google.maps.DirectionsService();
-      var directionsRenderer = new google.maps.DirectionsRenderer({
-        polylineOptions: {
-          strokeColor: `#${color}`,
-          strokeOpacity:0.8,
-          geodesic:true
-        },
-        suppressMarkers: true
-      });
-      directionsRenderer.setMap(map);
-      var mode = traces.get(person)[0]['Activity']
-      if(mode === 'UNKNOWN' || mode === 'running' || mode === 'walking'){
-        mode = 'WALKING'
-      } else if (mode === 'cycling'){
-        mode = 'BICYCLING'
-      } else {
-        mode = 'DRIVING'
-      }
-      var wpoints = traces.get(person).length > 2  ? traces.get(person).slice(1, traces.get(person).length) : []
-      var wpoints = []
-      if(traces.get(person).length > 2){
-        for(var w of traces.get(person).slice(1, traces.get(person).length-1))
-        wpoints.push({
-          location: new google.maps.LatLng(w['Latitude'], w['Longitude']),
-          stopover:true
-        })
-      }
-      var request = {
-        origin: {
-          query: `${traces.get(person)[0]['Latitude']} ${traces.get(person)[0]['Longitude']}`
-        },
-        destination: {
-          query: `${traces.get(person)[traces.get(person).length-1]['Latitude']} ${traces.get(person)[traces.get(person).length-1]['Longitude']}`
-        },
-        travelMode: mode,
-        waypoints: wpoints
-      };
-      directionsService.route(request, function(result, status) {
-        console.log(result)
-        if (status == 'OK') {
-          directionsRenderer.setDirections(result);
-        }
-      });
-    }
-  }
 })();
