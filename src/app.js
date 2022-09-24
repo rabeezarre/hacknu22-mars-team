@@ -181,7 +181,7 @@ if(floor !== 'null'){
             <h3>Identifier: ${point['Identifier']}</h3>
             <p>Activity: ${point['Activity']}</p>
           `
-          contentString += point['Floor label'] !== 'null' ? `<p>Floor label: ${point['Floor label']}</p>` : ''
+          contentString += point['Floor label'] !== 'null' ? `<p>Floor label: ${point['Floor label']}</p>` : `<p>Altitude: ${point['Altitude'].toFixed(2)} meters</p>`
           contentString += `<p>Measured ${(Math.round(lastTime - point['Timestamp'])/1000)} seconds ago</p>`
           const infowindow = new google.maps.InfoWindow({
             content: contentString,
