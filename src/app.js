@@ -54,7 +54,7 @@ function initWebGLOverlayView(map) {
   
     // load the model    
     loader = new GLTFLoader();               
-    const source = "maral_demo.glb";
+    const source = 'maral_demo.glb';
 
     const geometry = new THREE.CylinderGeometry( 20, 20, 40, 36 );
     const material = new THREE.MeshBasicMaterial( {
