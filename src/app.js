@@ -17,24 +17,12 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import cases from '/src/assets/cases.json' assert {type: 'json'}
 
-//json properties
-var case1 = cases[0][0];
-var json_latitude = case1["Latitude"];
-var json_longitude = case1["Longitude"];
-var json_vertical_acc = case1["Vertical accuracy"];
-var json_horizontal_acc = case1["Horizontal accuracy"];
-var json_altitude = case1["Altitude"];
-var json_activity = case1["Activity"];
-var json_floor = case1["Floor label"];
-var json_timestamp = case1["Timestamp"];
-
 const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
   version: "beta"
 };
 
 async function initMap(caseValue) {    
-
   const mapDiv = document.getElementById("map");
   const apiLoader = new Loader(apiOptions);
   await apiLoader.load();
@@ -84,26 +72,7 @@ function initWebGLOverlayView(map, caseValue) {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.25);
     directionalLight.position.set(0.5, -1, 0.5);
     scene.add(directionalLight);
-    
-    for(var c of cases[5]){
-      new google.maps.Marker({
-        position:{
-          lat: c['Latitude'],
-          lng: c['Longitude']
-        },
-        map:map,
-        title: c['Identifier']
-      })
-    }
-
-    marker.addListener("click", () => {
-      infowindow.open({
-        anchor: marker,
-        map:map,
-        shouldFocus: false,
-      });
-      map.setCenter(marker.getPosition());
-    });
+  
 
     // load the accuracy cylinder
     var cylinder_radius = Math.trunc(10 + json_horizontal_acc*10);
@@ -182,6 +151,7 @@ function initWebGLOverlayView(map, caseValue) {
 }
 
 (async () => {
+
   const urlParams = new URLSearchParams(window.location.search);
   const caseValue = urlParams.get('case');
 
@@ -190,73 +160,26 @@ function initWebGLOverlayView(map, caseValue) {
   const map = await initMap(caseValue-1);
   initWebGLOverlayView(map, caseValue-1);
 
- 
   //reading props
   
-  var infos = []
-  var scene = [...cases[caseValue]]
-  scene = scene.sort(
-    function(){
-      if(a.Identifier > b.Identifier) return -1
-      if(a.Identifier < b.Identifier) return 1
-      if(a.Timestamp > b.Timestamp) return -1
-      if(a.Timestamp < b.Timestamp) return 1
-    }
-  )
-  for(var c in scene){
-    var s = `<h1 id="firstHeading" class="firstHeading">${c.Identifier}</h1>` +
-    `<p>Activity: ${c.Activity}</p>`+
-    `<p>Floor label: ${c['Floor label']}</p>`
-    if(scene.length > 0){
-      var max_time = Math.max(...scene.map(p => p.Timestamp))
-      s += `<p>Time: ${Math.round((max_time - c.Timestamp)/1000)} ago</p>`
-    }
-    infos.push(s)
-  }
-
-  const directionsService = new google.maps.DirectionsService();
-  const directionsRenderer = new google.maps.DirectionsRenderer({
-    preserveViewport: true,
-    suppressMarkers: true
-  });
-  directionsRenderer.setMap(map);
-  // directionsService.route({
-  //     origin: {
-  //       query: `${cases[5][0]['Latitude']} ${cases[5][0]['Longitude']}`,
-  //     },
-  //     destination: {
-  //       query: `${cases[5][9]['Latitude']} ${cases[5][9]['Longitude']}`,
-  //     },
-  //     travelMode: google.maps.TravelMode.BICYCLING,
-  //   })
-  //   .then((response) => {
-  //     console.log(response)
-  //     directionsRenderer.setDirections(response);
-  //   })
-  if (directionsRenderer.getMap() == null)
-        directionsRenderer.setMap(map);
-  var stops = []
-  for(var i = 1; i < cases[5].length-1; i++){
-    stops.push({
-      location:new google.maps.LatLng(cases[5][i]['Latitude'], cases[5][i]['Longitude']),
-      stopover:true
-    })
-  }
-  var request = {
-    origin: 
-    {
-      query: `40.78017131, -73.96810659`,
-    },
-    destination: {
-      query: `40.78047792, -73.96793906`,
-    },
-    travelMode: 'WALKING',
-    waypoints:stops
-  };
-  directionsService.route(request, function(result, status) {
-    if (status == 'OK') {
-      console.log(result)
-      directionsRenderer.setDirections(result);
-    }
-  });
-})()
+  // var infos = []
+  // var scene = [...cases[caseValue]]
+  // scene = scene.sort(
+  //   function(){
+  //     if(a.Identifier > b.Identifier) return -1
+  //     if(a.Identifier < b.Identifier) return 1
+  //     if(a.Timestamp > b.Timestamp) return -1
+  //     if(a.Timestamp < b.Timestamp) return 1
+  //   }
+  // )
+  // for(var c in scene){
+  //   var s = `<h1 id="firstHeading" class="firstHeading">${c.Identifier}</h1>` +
+  //   `<p>Activity: ${c.Activity}</p>`+
+  //   `<p>Floor label: ${c['Floor label']}</p>`
+  //   if(scene.length > 0){
+  //     var max_time = Math.max(...scene.map(p => p.Timestamp))
+  //     s += `<p>Time: ${Math.round((max_time - c.Timestamp)/1000)} ago</p>`
+  //   }
+  //   infos.push(s)
+  // }
+})();
