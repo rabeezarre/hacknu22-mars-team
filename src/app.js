@@ -21,7 +21,7 @@ const apiOptions = {
   apiKey: 'AIzaSyB7_iUwIzCFUVNtXtBU5XyrlwtYHy6vwUM',
   version: "beta"
 };
-
+var renderer
 async function initMap(caseValue) {    
   const mapDiv = document.getElementById("map");
   const apiLoader = new Loader(apiOptions);
@@ -63,7 +63,7 @@ function initWebGLOverlayView(map, caseValue) {
     "mapId": "9221e2194dfa8f5e"
   }
 
-  webGLOverlayView.onAdd = () => {   
+  webGLOverlayView.onAdd = () => { 
     // set up the scene
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera();
@@ -75,8 +75,8 @@ function initWebGLOverlayView(map, caseValue) {
   
 
     // load the accuracy cylinder
-    var cylinder_radius = Math.trunc(10 + json_horizontal_acc*10);
-    var cylinder_height = Math.trunc(10 + json_vertical_acc*10);
+    var cylinder_radius = Math.trunc(json_horizontal_acc);
+    var cylinder_height = Math.trunc(json_vertical_acc);
     var cylinder = new THREE.CylinderGeometry(cylinder_radius, cylinder_radius, cylinder_height, 36);
     var cylinder_material = new THREE.MeshBasicMaterial( {
       color: 0x9fc5e8, 
@@ -85,8 +85,8 @@ function initWebGLOverlayView(map, caseValue) {
     } );
     const accuracy = new THREE.Mesh( cylinder, cylinder_material );
     accuracy.rotation.x = Math.PI/2;
+    // accuracy.position.z = json_altitude
     scene.add(accuracy);
-
     // load the model
     var source = 'assets/3d_models/maral_demo.glb';
     loader.load(
@@ -120,11 +120,12 @@ function initWebGLOverlayView(map, caseValue) {
     for(const person of traces.keys()){
       var color = Math.floor(Math.random()*16777215).toString(16)
       var lastTime = traces.get(person)[traces.get(person).length-1]['Timestamp']
-      traces.get(person).forEach(function(point){
+      traces.get(person).forEach(function(point, index){
           var marker = new google.maps.Marker({
             position:{lat:point['Latitude'], lng:point['Longitude']},
             map,
-            title:person
+            title:person,
+            label:(index+1).toString()
           })
           var contentString = `
             <h3>Identifier: ${point['Identifier']}</h3>
@@ -135,41 +136,7 @@ function initWebGLOverlayView(map, caseValue) {
           const infowindow = new google.maps.InfoWindow({
             content: contentString,
           });
-          marker.addListener("click", (event) => {
-            loader.load(
-              'assets/3d_models/maral_demo.glb',
-              // called when resource is loaded
-              function ( object ) {
-                scene.add(object);
-                object.rotation.x = Math.PI/2;
-                object.scale.set(10,10,10);
-                object.position.set(10/Math.pow(2, mapZoom), 5.3, 5.6);
-                x = ((evt.clientX - canvasPosition.left) / canvas.width) * 2 - 1;
-                y = -((evt.clientY - canvasPosition.top) / canvas.height) * 2 + 1;
-                object.traverse( function ( child ) {
-                  if ( child instanceof THREE.Mesh ) {
-                    //child.material.ambient.setHex(0xFF0000);
-                    child.material.color.setHex(0xaa0000);
-                  }
-                } );
-                
-                object.visible = false;
-            
-                document.getElementById("hideShow").addEventListener("click", function(){
-                  if(objHidden) {
-                    objHidden = false;
-                    // code to show object
-            
-                    object.visible = true;
-                  } else {
-                    objHidden = true;
-                    // code to hide object
-                    
-                    object.visible = false;
-                  }
-                });
-              },		
-            );
+          marker.addListener("click", () => {
             infowindow.open({
               anchor: marker,
               map,
