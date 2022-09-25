@@ -113,11 +113,12 @@ if(floor !== 'null'){
     // load the model
     console.log(cases[caseValue][cases[caseValue].length-1])
     if(cases[caseValue][cases[caseValue].length-1]['Identifier'] === 'Alice'){
-      console.log('test')
       if(cases[caseValue][0]['Activity'] === 'walking'){
         var source = '/assets/3d_models/Alua_standing.glb'
       } else if(cases[caseValue][0]['Activity'] === 'UNKNOWN'){
         var source = '/assets/3d_models/Alua_standing.glb'
+      } else {
+        var source = '/assets/3d_models/car.glb'
       }
     } else if (cases[caseValue][0]['Identifier'] === 'Bob'){
       if(cases[caseValue][0]['Activity'] === 'walking'){
@@ -128,14 +129,18 @@ if(floor !== 'null'){
         var source = '/assets/3d_models/Medet_standing.glb'
       }
     } else if(cases[caseValue][0]['Identifier'] === 'null'){
-      var source = '/assets/3d_models/Tyrannosaurus rex.glb'
+      var source = '/assets/3d_models/maral_demo.glb'
     } else if(cases[caseValue][0]['Identifier'] === 'Jane'){
       if(cases[caseValue][0]['Activity'] === 'walking'){
         var source = '/assets/3d_models/Playful dog.glb'
+      } else {
+        var source = '/assets/3d_models/Medet_running.glb'
       }
-    } else if(cases[caseValue][0]['Identifier'] === 'Chalie'){
+    } else if(cases[caseValue][0]['Identifier'] === 'Charlie'){
       var source = '/assets/3d_models/poly.glb'
     } else if(cases[caseValue][0]['Identifier'] === 'Tenzing'){
+      var source = '/assets/3d_models/maral_demo.glb'
+    } else if(cases[caseValue][0]['Identifier'] === 'John'){
       var source = '/assets/3d_models/maral_demo.glb'
     }
     // var source = '/assets/3d_models/Alua_running.glb'
