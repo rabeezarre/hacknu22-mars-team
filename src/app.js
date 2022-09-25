@@ -67,13 +67,13 @@ function initWebGLOverlayView(map, caseValue) {
     // set up the scene
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera();
+    scene.add(camera);
     const ambientLight = new THREE.AmbientLight( 0xffffff, 0.75 ); // soft white light
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.25);
     directionalLight.position.set(0.5, -1, 0.5);
     scene.add(directionalLight);
-  
-
+    
     // load the accuracy cylinder
     var cylinder_radius = Math.trunc(10 + json_horizontal_acc*10);
     var cylinder_height = Math.trunc(10 + json_vertical_acc*10);
@@ -91,7 +91,7 @@ function initWebGLOverlayView(map, caseValue) {
 const dir1 = new THREE.Vector3( 0, 0, 1 );
 dir1.normalize();
 const origin = new THREE.Vector3( 0, 0, -json_altitude);
-const length = json_altitude-10;
+const length = json_altitude-5;
 const hex = 0x0fc5ff;
 const arrowHelper1 = new THREE.ArrowHelper( dir1, origin, length, hex, 5, 3 );
 scene.add(arrowHelper1);
@@ -107,7 +107,8 @@ scene.add(arrowHelper1);
       }
     );
   }
-  
+
+
   webGLOverlayView.onContextRestored = ({gl}) => {    
     // create the three.js renderer, using the
     // maps's WebGL rendering context.
@@ -156,6 +157,7 @@ scene.add(arrowHelper1);
     // always reset the GL state
     renderer.resetState();
   }
+
   webGLOverlayView.setMap(map);
 }
 
@@ -261,4 +263,5 @@ scene.add(arrowHelper1);
       });
     }
   }
+
 })();

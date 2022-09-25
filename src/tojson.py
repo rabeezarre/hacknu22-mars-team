@@ -2,7 +2,7 @@ import openpyxl
 import json
 from openpyxl.cell.read_only import EmptyCell
 
-workbook = openpyxl.load_workbook('hacknu-dev-data.xlsx')
+workbook = openpyxl.load_workbook('hacknu-prod-data.xlsx')
 
 cases = []
 for sheet in workbook.worksheets:
